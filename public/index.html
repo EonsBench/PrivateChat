@@ -3,16 +3,24 @@
 <head>
   <title>Chat Example</title>
   <link rel="stylesheet" type="text/css" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
-    <div id="chat-box">
-        <div id="messages"></div>
-        <form id="form" action="">
-          <input id="input" autocomplete="off" /><button>Send</button>
+    <div id="chat-container">
+        <div id="chat-box">
+            <div id="messages"></div>
+        </div>
+        <form id="form" action="" enctype="multipart/form-data">
+            <div id="file-upload-container">
+                <label for="fileInput" id="fileInputLabel"><i class="fas fa-plus"></i></label>
+                <input type="file" id="fileInput" />
+            </div>
+            <input id="input" autocomplete="off" />
+            <button>Send</button>
         </form>
-      </div>
-  <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="main.js"></script>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
