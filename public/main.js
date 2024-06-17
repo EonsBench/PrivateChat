@@ -1,14 +1,27 @@
 var socket = io();
+var encryptionKey;
+var iv;
+socket.on('encryptionParams', function(params){
+    encryptionKey=CryptoJS.enc.Hex.parse(params.encryptionKey);
+    iv=CryptoJS.enc.Hex.parse(params.iv);
+    console.log(`key: ${encryptionKey} , iv: ${iv}`);
+})
+function encryptMessage(message) {
+    var encrypted = CryptoJS.AES.encrypt(message, encryptionKey, { iv: iv });
+    return encrypted.toString();
+}
+
 
 $('#form').submit(function(e) {
     e.preventDefault();
     var message = $('#input').val();
-    var file = $('#fileInput')[0].files[0]; // Get the selected file
+    var file = $('#fileInput')[0].files[0]; 
 
     if (file) {
         var formData = new FormData();
         formData.append('file', file);
-        
+        formData.append('iv', iv.toString(CryptoJS.enc.Hex)); 
+
         $.ajax({
             url: '/upload',
             type: 'POST',
@@ -16,7 +29,8 @@ $('#form').submit(function(e) {
             processData: false,
             contentType: false,
             success: function(data) {
-                socket.emit('chat message', { message: message, fileUrl: data.fileUrl });
+                var encryptedMessage = encryptMessage(message);
+                socket.emit('chat message', { message: encryptedMessage, fileUrl: data.fileUrl });
                 $('#input').val('');
                 $('#fileInput').val('');
                 if (file.type.startsWith('image/')) {
@@ -32,7 +46,8 @@ $('#form').submit(function(e) {
             }
         });
     } else {
-        socket.emit('chat message', { message: message });
+        var encryptedMessage = encryptMessage(message);
+        socket.emit('chat message', { message: encryptedMessage });
         $('#input').val('');
         $('#messages').append($('<li>').text('You: ' + message).addClass('me'));
         scrollToBottom();
@@ -71,3 +86,4 @@ function scrollToBottomAfterImageLoad() {
     var lastImage = images[images.length - 1];
     lastImage.onload = scrollToBottom;
 }
+
