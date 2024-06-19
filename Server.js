@@ -5,6 +5,9 @@ const path = require('path');
 const dotenv = require('dotenv');
 const multer = require('multer');
 const crypto = require('crypto');
+const helmet = require('helmet');
+const {v4:uuidv4} = require('uuid');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -25,6 +28,15 @@ crypto.randomBytes(16,(err,ivBuffer)=>{
   iv=ivBuffer;
 })
 
+function fileFilter(req, file, cb) {
+    const fileType = !/\.(exe|msi)$/i.test(path.extname(file.originalname).toLowerCase());
+    if (fileType) {
+        cb(null, true);
+    } else {
+        cb(new Error('허용되지 않는 파일 유형입니다.'));
+    }
+}
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, path.join(__dirname, 'public/uploads'));
@@ -33,10 +45,14 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + '-' + file.originalname);
     }
 });
-const upload = multer({ storage });
+const upload = multer({ 
+    storage: storage,
+    limits: {fileSize: 1024*1024*5},
+    fileFilter: fileFilter
+ });
 
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(helmet());
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
@@ -52,7 +68,8 @@ app.post('/upload', upload.single('file'), (req, res) => {
 
 io.on('connection', (socket) => {
     console.log('a user connected');
-    const randomNickname = 'User' + Math.floor(Math.random() * 1000);
+    const uuid = uuidv4();
+    const randomNickname = 'User' + uuid;
     socket.nickname = randomNickname;
     console.log('Nickname set:', socket.nickname);
     socket.emit('encryptionParams', { encryptionKey: encryptionKey.toString('hex'), iv: iv.toString('hex') });
@@ -62,10 +79,8 @@ io.on('connection', (socket) => {
 
     socket.on('chat message', (data) => {
       const encryptedMessage = data.message;
-      console.log(`encryptedMsg: ${encryptedMessage}`)
       const decryptedMessage = decryptMessage(encryptedMessage); 
       const { fileUrl } = data;
-      console.log(`message: ${decryptedMessage}`)
 
       socket.broadcast.emit('chat message', { user: socket.nickname, message: decryptedMessage, fileUrl });
     });
