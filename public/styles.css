@@ -1,3 +1,14 @@
+html{
+    background-color: #444;
+}
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #1a1a1a;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
 #chat-container {
     width: 400px;
     height: 400px; /* Increased height to accommodate the form */
@@ -5,13 +16,18 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    background-color: #2b2b2b;
+    border: 1px solid #444;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 }
 
 #chat-box {
     width: 100%;
-    height: 85%; /* Adjusted height */
-    border: 1px solid #ccc;
+    height: calc(100% - 50px); /* Adjusted height */
     overflow-y: auto;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 #messages {
@@ -26,16 +42,19 @@
     border-radius: 5px;
     clear: both;
     overflow-wrap: break-word;
+    max-width: 70%;
 }
 
 #messages li.me {
-    background-color: #f2f2f2;
+    background-color: #444;
     float: right;
+    color: white;
 }
 
 #messages li.others {
-    background-color: #ddd;
+    background-color: #555;
     float: left;
+    color: white;
 }
 
 #form {
@@ -43,6 +62,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: absolute;
+    bottom: 0;
+    background-color: #333;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 #file-upload-container {
@@ -62,8 +86,29 @@
 #input {
     flex: 1;
     margin-right: 5px;
+    height: 30px;
+    padding: 5px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #555;
+    border-radius: 3px;
+    outline: none;
 }
 
 button {
     margin-left: 5px;
+    padding: 8px 15px;
+    background-color: #1a1a1a;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    outline: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #333;
 }
