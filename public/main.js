@@ -11,7 +11,10 @@ function encryptMessage(message) {
     var encrypted = CryptoJS.AES.encrypt(message, encryptionKey, { iv: iv });
     return encrypted.toString();
 }
-
+function decryptMessage(encryptedMessage) {
+    var decrypted = CryptoJS.AES.decrypt(encryptedMessage, encryptionKey, { iv: iv });
+    return decrypted.toString(CryptoJS.enc.Utf8);
+}
 // 파일 선택 시 모달 표시
 $('#fileInput').change(function() {
     var file = $('#fileInput')[0].files[0];
@@ -77,7 +80,7 @@ socket.on('chat message', function(data) {
     var message = data.message;
     var user = data.user;
     var fileUrl = data.fileUrl;
-    var messageText = message;
+    var messageText = decryptMessage(message);
     if (fileUrl) {
         if (fileUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
             messageText += ' <img src="' + fileUrl + '" style="max-width: 200px;">';
