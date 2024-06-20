@@ -7,6 +7,8 @@ const multer = require('multer');
 const crypto = require('crypto');
 const helmet = require('helmet');
 const {v4:uuidv4} = require('uuid');
+const schedule = require('node-schedule');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -27,7 +29,18 @@ crypto.randomBytes(16,(err,ivBuffer)=>{
   if(err) throw err;
   iv=ivBuffer;
 })
-
+schedule.scheduleJob('0 0 * * *', function(){
+    const directory = path.join(__dirname, 'public', 'uploads');
+    fs.readdir(directory, (err, files)=>{
+        if(err) throw err;
+        for(const file of files){
+            fs.unlink(path.join(directory, file), err=>{
+                if(err) throw err;
+                console.log(`Deleted Files`);
+            });
+        }
+    })
+})
 function fileFilter(req, file, cb) {
     const fileType = !/\.(exe|msi)$/i.test(path.extname(file.originalname).toLowerCase());
     if (fileType) {
@@ -72,7 +85,8 @@ io.on('connection', (socket) => {
     const randomNickname = 'User' + uuid;
     socket.nickname = randomNickname;
     console.log('Nickname set:', socket.nickname);
-    socket.emit('encryptionParams', { encryptionKey: encryptionKey.toString('hex'), iv: iv.toString('hex') });
+    socket.emit('encryptionParams', { encryptionKey: encryptionKey.toString('hex'), iv: iv.toString('hex')});
+
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
@@ -80,9 +94,10 @@ io.on('connection', (socket) => {
     socket.on('chat message', (data) => {
       const encryptedMessage = data.message;
       const decryptedMessage = decryptMessage(encryptedMessage); 
+      const sendMessage = encryptMessage(decryptedMessage);
       const { fileUrl } = data;
 
-      socket.broadcast.emit('chat message', { user: socket.nickname, message: decryptedMessage, fileUrl });
+      socket.broadcast.emit('chat message', { user: socket.nickname, message: sendMessage, fileUrl });
     });
 });
 
@@ -94,4 +109,10 @@ function decryptMessage(encryptedMessage) {
   let decrypted = decipher.update(encryptedMessage, 'base64', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
+}
+function encryptMessage(decryptedMessage){
+    const cipher = crypto.createCipheriv('aes-128-cbc', encryptionKey, iv);
+    let encrypted = cipher.update(decryptedMessage,'utf8','base64');
+    encrypted += cipher.final('base64');
+    return encrypted;
 }
