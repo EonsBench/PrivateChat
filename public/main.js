@@ -6,7 +6,20 @@ socket.on('encryptionParams', function(params){
     encryptionKey = CryptoJS.enc.Hex.parse(params.encryptionKey);
     iv = CryptoJS.enc.Hex.parse(params.iv);
 });
-
+socket.on('user joined', ()=>{
+    var joinMessage = '유저가 입장했습니다.'
+    appendSystemMessage(joinMessage);
+    console.log(joinMessage);
+});
+socket.on('user left',()=>{
+    var leftMessage = '유저가 퇴장했습니다'
+    appendSystemMessage(leftMessage);
+});
+// 채팅창에 시스템 메시지 추가
+function appendSystemMessage(message) {
+    $('#messages').append($('<li>').text(message).addClass('system-message'));
+    scrollToBottom();
+}
 function encryptMessage(message) {
     var encrypted = CryptoJS.AES.encrypt(message, encryptionKey, { iv: iv });
     return encrypted.toString();

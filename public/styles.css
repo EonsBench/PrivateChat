@@ -56,7 +56,11 @@ body {
     float: left;
     color: white;
 }
-
+#messages li.system-message {
+    background-color: #555;
+    float: center;
+    color: white;
+}
 #form {
     width: 100%;
     display: flex;

@@ -86,9 +86,10 @@ io.on('connection', (socket) => {
     socket.nickname = randomNickname;
     console.log('Nickname set:', socket.nickname);
     socket.emit('encryptionParams', { encryptionKey: encryptionKey.toString('hex'), iv: iv.toString('hex')});
-
+    socket.broadcast.emit('user joined', {nickname: socket.nickname});
     socket.on('disconnect', () => {
         console.log('user disconnected');
+        socket.broadcast.emit('user left', {nickname: socket.nickname});
     });
 
     socket.on('chat message', (data) => {
