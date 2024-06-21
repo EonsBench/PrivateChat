@@ -6,6 +6,8 @@ socket.on('encryptionParams', function(params){
     encryptionKey = CryptoJS.enc.Hex.parse(params.encryptionKey);
     iv = CryptoJS.enc.Hex.parse(params.iv);
 });
+const room = window.location.pathname.split('/').pop();
+socket.emit('join room', room);
 socket.on('user joined', ()=>{
     var joinMessage = '유저가 입장했습니다.'
     appendSystemMessage(joinMessage);
@@ -55,7 +57,7 @@ $('#confirmSendFile').click(function() {
         success: function(data) {
             var message = $('#input').val().trim();
             var encryptedMessage = encryptMessage(message);
-            socket.emit('chat message', { message: encryptedMessage, fileUrl: data.fileUrl });
+            socket.emit('chat message', { room, message: encryptedMessage, fileUrl: data.fileUrl });
             $('#input').val('');
             $('#fileInput').val('');
             if (file.type.startsWith('image/')) {
@@ -81,7 +83,7 @@ $('#form').submit(function(e) {
         return false; 
     }
     var encryptedMessage = encryptMessage(message);
-    socket.emit('chat message', { message: encryptedMessage });
+    socket.emit('chat message', { room, message: encryptedMessage });
     $('#input').val('');
     $('#messages').append($('<li>').text(message).addClass('me'));
     scrollToBottom();
@@ -109,7 +111,10 @@ socket.on('chat message', function(data) {
         scrollToBottom();
     }
 });
-
+$('#leaveRoomBtn').click(function() {
+    socket.emit('leave room', room); // 방에서 나가는 이벤트 발생
+    window.location.href = '/'; // 메인 페이지로 이동 (예시)
+});
 // 화면 아래로 스크롤
 function scrollToBottom() {
     var chatBox = document.getElementById("chat-box");

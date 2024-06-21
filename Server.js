@@ -65,11 +65,32 @@ const upload = multer({
  });
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://stackpath.bootstrapcdn.com"]
+        }
+      }
+}));
+
+let chatRooms = [];
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/chat/:rooms', (req,res)=>{
+    res.sendFile(__dirname + '/public/chat.html');
+});
+app.post('/create-room',(req,res)=>{
+    const roomName = `Room${uuidv4()}`;
+    chatRooms.push(roomName);
+    res.json({roomName});
+});
+app.get('/rooms',(req,res)=>{
+    res.json(chatRooms);
+})
 app.post('/upload', upload.single('file'), (req, res) => {
     if (req.file) {
         const fileUrl = `/uploads/${req.file.filename}`;
@@ -86,19 +107,36 @@ io.on('connection', (socket) => {
     socket.nickname = randomNickname;
     console.log('Nickname set:', socket.nickname);
     socket.emit('encryptionParams', { encryptionKey: encryptionKey.toString('hex'), iv: iv.toString('hex')});
-    socket.broadcast.emit('user joined', {nickname: socket.nickname});
     socket.on('disconnect', () => {
         console.log('user disconnected');
-        socket.broadcast.emit('user left', {nickname: socket.nickname});
+        if(socket.room){
+            socket.leave(socket.room);
+            socket.broadcast.to(socket.room).emit('user left',{nickname: socket.nickname});
+            socket.room = null;
+        }
+        //socket.to(room).broadcast.emit('user left', {nickname: socket.nickname});
     });
 
     socket.on('chat message', (data) => {
       const encryptedMessage = data.message;
       const decryptedMessage = decryptMessage(encryptedMessage); 
       const sendMessage = encryptMessage(decryptedMessage);
-      const { fileUrl } = data;
+      const { fileUrl, room } = data;
 
-      socket.broadcast.emit('chat message', { user: socket.nickname, message: sendMessage, fileUrl });
+      socket.broadcast.to(room).emit('chat message', { user: socket.nickname, message: sendMessage, fileUrl });
+    });
+    socket.on('join room', (room)=>{
+        socket.join(room);
+        socket.room = room;
+        console.log(`${socket.nickname}: join ${room}`);
+        socket.broadcast.to(room).emit('user joined', {nickname: socket.nickname});
+    });
+    socket.on('leave room',(req,res)=>{
+        if(socket.room){
+            socket.leave(socket.room);
+            socket.broadcast.to(socket.room).emit('user left',{nickname: socket.nickname});
+            socket.room = null;
+        }
     });
 });
 
