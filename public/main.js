@@ -63,6 +63,9 @@ $('#confirmSendFile').click(function() {
             if (file.type.startsWith('image/')) {
                 $('#messages').append($('<li>').html(message + ' <a href="' + data.fileUrl + '" data-lightbox="image-1"><img src="' + data.fileUrl + '" style="max-width: 200px;"></a>').addClass('me'));
                 scrollToBottomAfterImageLoad();
+            }else if (file.type.startsWith('video/')) {
+                $('#messages').append($('<li>').html(`${message} <video controls style="max-width: 200px;"><source src="${data.fileUrl}" type="${file.type}">Your browser does not support the video tag.</video>`).addClass('me'));
+                scrollToBottom();
             } else {
                 $('#messages').append($('<li>').text(message + ' (파일: ' + file.name + ')').addClass('me'));
                 scrollToBottom();
@@ -101,7 +104,12 @@ socket.on('chat message', function(data) {
             messageText += ' <a href="' + fileUrl + '" data-lightbox="image-1"><img src="' + fileUrl + '" style="max-width: 200px;"></a>';
             $('#messages').append($('<li>').html(messageText).addClass('others'));
             scrollToBottomAfterImageLoad();
-        } else {
+        }else if (fileUrl.match(/\.(mp4|webm|ogg)$/) != null) {
+            messageText += ` <video controls style="max-width: 200px;"><source src="${fileUrl}" type="video/mp4">Your browser does not support the video tag.</video>`;
+            $('#messages').append($('<li>').html(messageText).addClass('others'));
+            scrollToBottom();
+        } 
+        else {
             messageText += ' <a href="' + fileUrl + '" target="_blank">파일 다운로드</a>';
             $('#messages').append($('<li>').html(messageText).addClass('others'));
             scrollToBottom();

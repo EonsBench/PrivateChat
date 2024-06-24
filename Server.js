@@ -69,7 +69,8 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://stackpath.bootstrapcdn.com"]
+          scriptSrc: ["'self'", "https://code.jquery.com", "https://cdnjs.cloudflare.com", "https://stackpath.bootstrapcdn.com"],
+          imgSrc: ["'self'", "https://cdnjs.cloudflare.com", "data:"]
         }
       }
 }));
