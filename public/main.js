@@ -61,7 +61,7 @@ $('#confirmSendFile').click(function() {
             $('#input').val('');
             $('#fileInput').val('');
             if (file.type.startsWith('image/')) {
-                $('#messages').append($('<li>').html(message + ' <img src="' + data.fileUrl + '" style="max-width: 200px;">').addClass('me'));
+                $('#messages').append($('<li>').html(message + ' <a href="' + data.fileUrl + '" data-lightbox="image-1"><img src="' + data.fileUrl + '" style="max-width: 200px;"></a>').addClass('me'));
                 scrollToBottomAfterImageLoad();
             } else {
                 $('#messages').append($('<li>').text(message + ' (파일: ' + file.name + ')').addClass('me'));
@@ -98,7 +98,7 @@ socket.on('chat message', function(data) {
     var messageText = decryptMessage(message);
     if (fileUrl) {
         if (fileUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
-            messageText += ' <img src="' + fileUrl + '" style="max-width: 200px;">';
+            messageText += ' <a href="' + fileUrl + '" data-lightbox="image-1"><img src="' + fileUrl + '" style="max-width: 200px;"></a>';
             $('#messages').append($('<li>').html(messageText).addClass('others'));
             scrollToBottomAfterImageLoad();
         } else {
