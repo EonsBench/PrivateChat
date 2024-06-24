@@ -60,7 +60,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
     storage: storage,
-    limits: {fileSize: 1024*1024*5},
+    limits: {fileSize: 1024*1024*20},
     fileFilter: fileFilter
  });
 
@@ -115,7 +115,6 @@ io.on('connection', (socket) => {
             socket.broadcast.to(socket.room).emit('user left',{nickname: socket.nickname});
             socket.room = null;
         }
-        //socket.to(room).broadcast.emit('user left', {nickname: socket.nickname});
     });
 
     socket.on('chat message', (data) => {
