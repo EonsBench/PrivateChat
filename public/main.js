@@ -88,7 +88,8 @@ $('#form').submit(function(e) {
     var encryptedMessage = encryptMessage(message);
     socket.emit('chat message', { room, message: encryptedMessage });
     $('#input').val('');
-    $('#messages').append($('<li>').text(message).addClass('me'));
+    var messageText = convertToLinks(message);
+    $('#messages').append($('<li>').html(messageText).addClass('me'));
     scrollToBottom();
     return false;
 });
@@ -99,6 +100,7 @@ socket.on('chat message', function(data) {
     var user = data.user;
     var fileUrl = data.fileUrl;
     var messageText = decryptMessage(message);
+    messageText = convertToLinks(messageText);
     if (fileUrl) {
         if (fileUrl.match(/\.(jpeg|jpg|gif|png)$/) != null) {
             messageText += ' <a href="' + fileUrl + '" data-lightbox="image-1"><img src="' + fileUrl + '" style="max-width: 200px;"></a>';
@@ -115,7 +117,7 @@ socket.on('chat message', function(data) {
             scrollToBottom();
         }
     } else {
-        $('#messages').append($('<li>').text(messageText).addClass('others'));
+        $('#messages').append($('<li>').html(messageText).addClass('others'));
         scrollToBottom();
     }
 });
@@ -134,4 +136,8 @@ function scrollToBottomAfterImageLoad() {
     var images = document.querySelectorAll('#messages img');
     var lastImage = images[images.length - 1];
     lastImage.onload = scrollToBottom;
+}
+function convertToLinks(text) {
+    var urlPattern = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
 }
